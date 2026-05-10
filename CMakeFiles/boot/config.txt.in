@@ -1,0 +1,6 @@
+arm_64bit=@ARM_64BIT@
+kernel=@IMAGEFILE@
+@JTAG_ENABLE@
+@MODEL_CONFIG@
+dtoverlay=disable-bt
+force_turbo=1

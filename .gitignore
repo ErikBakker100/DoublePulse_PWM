@@ -1,0 +1,19 @@
+# Alles negeren
+*
+
+# Bewaar configuratie files
+!CMakeLists.txt
+!README.md
+!.gitignore
+!CMakeFiles
+!CMakeFiles/**
+
+# Bewaar broncode
+!src/
+!src/**
+!lib
+!lib/**
+
+# Bewaar data
+!Information
+!Information/**

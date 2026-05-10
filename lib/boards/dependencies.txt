@@ -1,0 +1,19 @@
+🔹 Dependencies
+
+The RPI boards are defined in /lib/boards/ (rpi_boards.c and include/rpi_boards.h)
+Board → SoC
+    The board defines which SoC is implemented
+    Each RPI board has a SoC (system on a Chip)
+    The Soc's are defined in /lib/boards/soc/ (BCM2835.c, BCM2836.c and include/BCM2835.h, BCM2836.h, BCM2711.h)
+    SoC → CPU
+        The SoC defines the type of CPU core, the amount of CPU cores
+        The CPU's are defined in /lib/boards/soc/cpu/ (cpu.c, arm_partnum.c and include/cpu.h, arm_partnum.h)
+        CPU → Architecture
+            CPU determines the ARM-architecture used (v6/v7/v8) and the instruction set (32-bit / 64-bit / A/R/M).
+            The architectures are defined in /lib/boards/soc/cpu/architectures/ (architectures.h)
+                Architectuur → HAL / Registers
+                Determines which registers are being used (CPUID, MIDR_EL1, CP15, etc.) and which barriers (DSB/ISB/WFE/SEV) are available.
+                Defined in lib/boards/soc/cpu/architectures/registers
+    SoC → MMIO
+        SoC determines the base addresses (MMIO) for GPIO, UART, timers etc.
+        Defined in /lib/boards/soc/ (include/mmio.h)
