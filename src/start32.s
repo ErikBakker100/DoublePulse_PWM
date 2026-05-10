@@ -15,30 +15,22 @@ _start:
     // Clear the BSS segment (assumes __bss_start and __bss_end word-aligned).
     bl  clearBss
 // -----------------------------------------------------
-//  Entry for Core0 and if defined DUALCORE=on Core1
+//  Entry for Core0
 // -----------------------------------------------------
 core_entry_x 0
-#ifdef DUALCORE
-core_entry_x 1
-#endif
+
 // -----------------------------------------------------
-//  IRQ handlers for Core0 and if defined DUALCORE=on Core1
+//  IRQ handlers for Core0
 // -----------------------------------------------------
 irq_entry_x	0
-#ifdef DUALCORE
-irq_entry_x	1
-#endif
+
 // -----------------------------------------------------
-//  FIQ handlers for Core0 and if defined DUALCORE=on Core1
+//  FIQ handlers for Core0
 // -----------------------------------------------------
 fiq_entry_x	0
-#ifdef DUALCORE
-fiq_entry_x	1
-#endif
+
 // -----------------------------------------------------
-//  Vector tables for Core0 and if defined DUALCORE=on Core1
+//  Vector tables for Core0
 // -----------------------------------------------------
 vector_core_x 0
-#ifdef DUALCORE
-vector_core_x 1
-#endif
+

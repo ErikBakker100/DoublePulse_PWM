@@ -11,31 +11,22 @@ _start:
     bl  clearBss
 
 // -----------------------------------------------------
-// Entry for Core0 and if defined DUALCORE=on Core1
+// Entry for Core0
 // -----------------------------------------------------
 core_entry_x 0
-#ifdef DUALCORE
-core_entry_x 1
-#endif
 
 // -----------------------------------------------------
-// IRQ handlers for Core0 and if defined DUALCORE=on Core1
+// IRQ handlers for Core0
 // -----------------------------------------------------
 irq_entry_x 0
-#ifdef DUALCORE
-irq_entry_x 1
-#endif
+
 // -----------------------------------------------------
-//  FIQ handlers for Core0 and if defined DUALCORE=on Core1
+//  FIQ handlers for Core0
 // -----------------------------------------------------
 fiq_entry_x	0
-#ifdef DUALCORE
-fiq_entry_x	1
-#endif
+
 // ---------------------------------------------------------
-// Vector Tables (EL1) for Core0 and if defined DUALCORE=on Core1
+// Vector Tables (EL1) for Core0
 // ---------------------------------------------------------
 vector_table_x 0
-#ifdef DUALCORE
-vector_table_x 1
-#endif
+

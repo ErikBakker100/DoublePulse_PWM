@@ -22,7 +22,7 @@ typedef enum {
 
 typedef struct {
     void (*init_pin)(uint8_t pin, gpio_mode_t mode, gpio_pud_t pud);
-    void (*init_pwm_pin)(uint8_t pin);
+    void (*init_pwm_pin)(void);
     void (*set)(uint8_t pin);
     void (*clear)(uint8_t pin);
     void (*toggle)(uint8_t pin);
@@ -33,7 +33,7 @@ extern const gpio_ops_t *gpio;
 extern uint8_t trigger_pin;                 // Used to trigger a scope.
 
 void bcm283x_gpio_init_pin(volatile bcm2835_gpio_regs_t *regs, uint8_t pin, gpio_mode_t mode, gpio_pud_t pud);
-void bcm283x_gpio_init_pwm_pin(uint8_t pin);
+void bcm283x_gpio_init_pwm_pin(void);
 void bcm283x_gpio_set(volatile bcm2835_gpio_regs_t *regs, uint8_t pin);
 void bcm283x_gpio_clear(volatile bcm2835_gpio_regs_t *regs, uint8_t pin);
 void bcm283x_gpio_toggle(volatile bcm2835_gpio_regs_t *regs, uint8_t pin);

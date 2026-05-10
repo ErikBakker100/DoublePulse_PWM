@@ -132,23 +132,10 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
   mu_puts(" milli degrees Celsius\r\n");
   mu_puts("> ****************************************************\r\n");
 
-  gpio->init_pwm_pin(OUTPUT_PIN);           // set pin for pwm, and set the PWM channel based on the pin set.
-  if (*pwm->channel == -1) {                // Only certain pins can be used, stop the program
-    mu_puts("> Output pin can not be configured for PWM, halting:");
-    return;
-  }
-  mu_puts("> Using trigger GPIO: ");
-  mu_put_uint(trigger_pin);
-  mu_puts("\r\n");
+  gpio->init_pwm_pin();                     // set pin for pwm, and set the PWM channel based on the pin set.
   gpio->init_pin(STATUS_PIN, GPIO_OUTPUT, PULL_DOWN); // Set GPIO 21 voor hart beat indication
   timer->set(1, BLINK_TIMER);               // Initialize timer 1 for .1 second intervals
   interrupts->init_core0();                 // Initialize IRQs for core0
-#ifdef DUALCORE
-  start_core(1);                            // Start double pulse generator on core1 and enable irq's  
-  mu_puts("> Running in dual core mode.\r\n");
-#else
-  mu_puts("> Running in single core mode.\r\n");
-#endif
   bool updated = true;                      // We start with new settings, so we will send a signal to update the intervals array.
 
   while (1) {
@@ -233,11 +220,7 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
       }
     } 
     if (updated) {
-#ifdef DUALCORE
-      mailbox->write(0, 1, 0x1);      // Send a signal to core1 that the intervals have been updated
-#else
       mailbox->write(0, 0, 0x1);      // Send a signal to core0 that the intervals have been updated
-#endif
       updated = false;
     }
   }

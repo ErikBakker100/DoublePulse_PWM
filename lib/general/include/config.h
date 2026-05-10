@@ -1,7 +1,8 @@
 #pragma once
 #include <stdint.h>
 
-#define OUTPUT_PIN ((uint8_t)OUTPUT)        // GPIO pin used for output, set in CMakeLists.txt
+#define OUTPUT_PIN 18                       // GPIO pin used for output
+#define TRIGGER_PIN 19                      // GPIO pin used for triggering scope on second channel
 #define STATUS_PIN 21                       // GPIO pin used for status LED, used for heart beat indication
 
 #define BAUDRATE 115200
@@ -17,8 +18,6 @@ extern volatile uint8_t Intervals[];        // Array to hold the intervals
 #define BITSTREAM_WORDS 256                 // Maximum number of 32-bit words in the bitstream for the PWM signal, this limits the maximum pulse interval and pulse widths we can generate. 
                                             // We need to make sure that the total number of bits in the bitstream does not exceed BITSTREAM_WORDS * 32 bits.
 extern volatile uint32_t bitstream[BITSTREAM_WORDS]; // We will use this to store the bitstream for the PWM signal
-
-#define TRIGGER_PULSE_BITS 8                // Width of the scope trigger pulse in PWM bit ticks.
 
 #define CPUID_REG (*(volatile uint32_t *)0xE000ED00)
 

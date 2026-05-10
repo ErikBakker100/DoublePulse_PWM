@@ -29,7 +29,7 @@ void bcm2837_pwm_run() {
         
     uint32_t ctl = 0;                       // Control variable to hold the control register value for the PWM channel.
     uint32_t trigger_period = Intervals[0] + Intervals[1] + Intervals[2] + Intervals[3];
-    uint32_t trigger_width = TRIGGER_PULSE_BITS;
+    uint32_t trigger_width = 8;
     if (trigger_width >= trigger_period) {
         trigger_width = 1;
     }
@@ -42,7 +42,7 @@ void bcm2837_pwm_run() {
         ctl |= PWM_CTL_USEF1;               // Set the use FIFO bit to 1 to enable the use of the FIFO for the channel.
 //    ctl |= PWM_CTL_RPTL1;                 // Set the repeat last data bit to 1 to have the channel repeat the last data in the FIFO when it runs out of data.  
         PWM0_2837->RNG0 = trigger_period;
-        PWM0_2837->DAT0 = 0x1;
+        PWM0_2837->DAT0 = trigger_width;
         ctl |= PWM_CTL_MSEN0;
     }
     else { 

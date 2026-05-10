@@ -221,11 +221,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # Compiler settings
 # ----------------------
 
-if(DUALCORE STREQUAL "on")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE 
-    DUALCORE)
-endif()
-
 if(ARM_BITS STREQUAL "arm64")
     target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<COMPILE_LANGUAGE:ASM>:ARCH_ARM64>
