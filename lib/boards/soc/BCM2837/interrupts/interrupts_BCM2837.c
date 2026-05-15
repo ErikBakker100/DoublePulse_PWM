@@ -31,8 +31,8 @@ void bcm2837_interrupts_init_core0(void) {
     // PWM en DMA interrupts.
     IC_2837->ENABLE_IRQS[0] |= (1 << 21);   // Enable DMA interrupt (bit 21 overall, bit 21 in ENABLE_IRQS[0])
     IC_2837->ENABLE_IRQS[1] |= (1 << 13);   // Enable PWM interrupt (bit 45 overall, bit 13 in ENABLE_IRQS[1])
-    // ensure writes reach device before we enable interrupts
     CORE_MB_CTRL_2837->MAILBOX_CNTRL[0] = (MBOX0_IRQ); // IRQ voor mailbox 0 van core0 enabelen.
+    // ensure writes reach device before we enable interrupts
     dsb();
     isb();
     // Enable interrupts
@@ -104,42 +104,6 @@ void bcm2837_irq_handler_core1(void) {
 void bcm2837_fiq_handler_core1(void) {
 }
 
-// ----------------------------------------------------------------------------------
-// General IRQ routines
-// ----------------------------------------------------------------------------------
-
-void bcm2837_irq_disable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifset, #2" ::: "memory");
-#else
-    asm volatile("cpsid i" ::: "memory");
-#endif
-}
-
-void bcm2837_fiq_disable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifset, #1" ::: "memory");
-#else
-    asm volatile("cpsid f" ::: "memory");
-#endif
-}
-
-void bcm2837_irq_enable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifclr, #2" ::: "memory");
-#else
-    asm volatile("cpsie i" ::: "memory");
-#endif
-}
-
-void bcm2837_fiq_enable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifclr, #1" ::: "memory");
-#else
-    asm volatile("cpsie f" ::: "memory");
-#endif
-}
-
 const interrupts_ops_t bcm2837_interrupts_ops = {
     .init_core0         = bcm2837_interrupts_init_core0,
     .irq_handler_core0  = bcm2837_irq_handler_core0,
@@ -147,10 +111,10 @@ const interrupts_ops_t bcm2837_interrupts_ops = {
     .irq_handler_core1  = bcm2837_irq_handler_core1,
     .fiq_handler_core1  = bcm2837_fiq_handler_core1,
     .init_core1         = bcm2837_interrupts_init_core1,
-    .irq_disable        = bcm2837_irq_disable,
-    .fiq_disable        = bcm2837_fiq_disable,
-    .irq_enable         = bcm2837_irq_enable,
-    .fiq_enable         = bcm2837_fiq_enable
+    .irq_disable        = irq_disable,
+    .fiq_disable        = fiq_disable,
+    .irq_enable         = irq_enable,
+    .fiq_enable         = fiq_enable
 };
 
 void bcm2837_interrupts_init(void)

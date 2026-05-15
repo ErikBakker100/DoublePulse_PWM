@@ -16,8 +16,6 @@
 #include "../lib/general/include/serial.h"
 #include "../lib/general/include/date_time.h"
 
-#include "../lib/boards/soc/BCM2711/include/BCM2711.h"
-
 // Timing Variables
 //  _____________                   ____________
 // | PulseWidth1 | interPulseDelay | PulseWith2 | Pulseinterval
@@ -194,7 +192,7 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
                 mu_puts("\r\n");
                 continue;                   // Skip to the next iteration of the loop
               }
-              Intervals[j] = strtoul(jsonString + t[i+1].start, NULL, 10);
+              Intervals[j] = value;
               mu_puts("> ");
               mu_puts(key);
               mu_puts(" now: ");

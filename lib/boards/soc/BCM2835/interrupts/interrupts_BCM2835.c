@@ -52,42 +52,6 @@ void bcm2835_irq_handler_core0(void) {
 void bcm2835_fiq_handler_core0(void) {
 }
 
-// ----------------------------------------------------------------------------------
-// General IRQ routines
-// ----------------------------------------------------------------------------------
-
-void bcm2835_irq_disable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifset, #2" ::: "memory");
-#else
-    asm volatile("cpsid i" ::: "memory");
-#endif
-}
-
-void bcm2835_fiq_disable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifset, #1" ::: "memory");
-#else
-    asm volatile("cpsid f" ::: "memory");
-#endif
-}
-
-void bcm2835_irq_enable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifclr, #2" ::: "memory");
-#else
-    asm volatile("cpsie i" ::: "memory");
-#endif
-}
-
-void bcm2835_fiq_enable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifclr, #1" ::: "memory");
-#else
-    asm volatile("cpsie f" ::: "memory");
-#endif
-}
-
 const interrupts_ops_t bcm2835_interrupts_ops = {
     .init_core0         = bcm2835_interrupts_init_core0,
     .irq_handler_core0  = bcm2835_irq_handler_core0,
@@ -95,10 +59,10 @@ const interrupts_ops_t bcm2835_interrupts_ops = {
     .irq_handler_core1  = 0,
     .fiq_handler_core1  = 0,    
     .init_core1         = 0,
-    .irq_disable        = bcm2835_irq_disable,
-    .fiq_disable        = bcm2835_fiq_disable,
-    .irq_enable         = bcm2835_irq_enable,
-    .fiq_enable         = bcm2835_fiq_enable
+    .irq_disable        = irq_disable,
+    .fiq_disable        = fiq_disable,
+    .irq_enable         = irq_enable,
+    .fiq_enable         = fiq_enable
 };
 
 void bcm2835_interrupts_init(void)

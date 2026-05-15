@@ -22,3 +22,11 @@ extern void irq_handler_core0(void);
 extern void irq_handler_core1(void);
 extern void fiq_handler_core0(void);
 extern void fiq_handler_core1(void);
+
+// ----------------------------------------------------------------------------------
+// General IRQ routines
+// ----------------------------------------------------------------------------------
+void irq_disable(void);
+void fiq_disable(void);
+void irq_enable(void);
+void fiq_enable(void);

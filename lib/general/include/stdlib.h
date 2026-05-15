@@ -28,3 +28,11 @@ void invalidate_cache(const volatile void *, uint32_t);
 void sev(void);
 /* Wait for Event */
 void wfe(void);
+
+// ----------------------------------------------------------------------------------
+// General IRQ routines
+// ----------------------------------------------------------------------------------
+void irq_disable(void);
+void fiq_disable(void);
+void irq_enable(void);
+void fiq_enable(void);

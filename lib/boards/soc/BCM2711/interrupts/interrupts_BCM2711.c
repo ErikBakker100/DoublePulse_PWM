@@ -108,42 +108,6 @@ void bcm2711_fiq_handler_core1(void) {
     bcm2711_irq_handler_core1();
 }
 
-// ----------------------------------------------------------------------------------
-// General IRQ routines
-// ----------------------------------------------------------------------------------
-
-void bcm2711_irq_disable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifset, #2" ::: "memory");
-#else
-    asm volatile("cpsid i" ::: "memory");
-#endif
-}
-
-void bcm2711_fiq_disable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifset, #1" ::: "memory");
-#else
-    asm volatile("cpsid f" ::: "memory");
-#endif
-}
-
-void bcm2711_irq_enable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifclr, #2" ::: "memory");
-#else
-    asm volatile("cpsie i" ::: "memory");
-#endif
-}
-
-void bcm2711_fiq_enable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifclr, #1" ::: "memory");
-#else
-    asm volatile("cpsie f" ::: "memory");
-#endif
-}
-
 void bcm2711_gic400_init_distributor_disable (void) {
     INT_GICD_2711->CTLR = 0; // Disable GIC Distributor
 }
@@ -159,38 +123,13 @@ const interrupts_ops_t bcm2711_interrupts_ops = {
     .init_core1     = bcm2711_interrupts_init_core1,
     .irq_handler_core1  = bcm2711_irq_handler_core1,
     .fiq_handler_core1  = bcm2711_fiq_handler_core1,
-    .irq_disable        = bcm2711_irq_disable,
-    .fiq_disable        = bcm2711_fiq_disable,
-    .irq_enable         = bcm2711_irq_enable,
-    .fiq_enable         = bcm2711_fiq_enable
+    .irq_disable        = irq_disable,
+    .fiq_disable        = fiq_disable,
+    .irq_enable         = irq_enable,
+    .fiq_enable         = fiq_enable
 };
 
 void bcm2711_interrupts_init(void)
 {
     interrupts = &bcm2711_interrupts_ops;
 }
-
-/*
-void gic_init(void) {
-    INT_GICD->CTLR = 0;
-    // Enable UART IRQ (57)
-    INT_GICD->ISENABLER[57 / 32] = 1 << (57 % 32);
-    INT_GICD->IPRIORITYR[57] = 0x80;
-    INT_GICD->ITARGETSR[57] = 1; // CPU0
-
-    INT_GICD->CTLR = 1;
-
-    INT_GICC->PMR = 0xFF;
-    INT_GICC->CTLR = 1;
-}
-
-uint32_t irq = INT_GICC->IAR & 0x3FF;
-
-switch (irq) {
-    case 57:  // UART (PL011)
-        uart_irq_handler();
-        break;
-}
-
-GICC->EOIR = irq;
-*/
