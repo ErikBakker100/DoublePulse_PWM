@@ -44,7 +44,7 @@ void bcm2837_dma_run(void) {
     cb->TI = 0 | TI_WAIT_RESP | TI_DEST_DREQ | TI_SRC_INC | TI_PERMAP(5); // Set the control block flags for the DMA transfer, wait for the write response, 
                                             // use DREQ to pace the transfer based on the PWM FIFO status, increment the source address after each read, and set the peripheral mapping to 5 for PWM.
     cb->SOURCE_AD = bitstream_bus_addr;
-    cb->DEST_AD = ((uint32_t)&PWM0_2837->FIF & 0x00FFFFFF) | board.soc.data.bus_base; // (uint32_t)(uintptr_t)0x7E20C018 het adres van de PWM FIFO register. We gebruiken een bus adres omdat de DMA-engine alleen bus adressen begrijpt.
+    cb->DEST_AD = (PWM0_2837->FIF & 0x00FFFFFF) | board.soc.data.bus_base; // (uint32_t)(uintptr_t)0x7E20C018 het adres van de PWM FIFO register. We gebruiken een bus adres omdat de DMA-engine alleen bus adressen begrijpt.
     cb->TXFR_LEN = length * sizeof(uint32_t); // Convert number of 32-bit words to number of bytes
     cb->STRIDE = 0; // No stride for simple 1D transfers
     cb->NEXTCONBK = cb_bus_addr;

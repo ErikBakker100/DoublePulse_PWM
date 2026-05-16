@@ -1,4 +1,4 @@
-#include "include/core1.h"
+#include "include/core0.h"
 #include "../general/include/stdlib.h"
 #include "../general/include/config.h"
 #include "../boards/soc/include/gpio.h"

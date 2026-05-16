@@ -138,7 +138,7 @@ void isb(void)
     __asm__ volatile ( "mcr p15, 0, r0, c7, c5, 4\n" ::: "memory");
 
 #else
-#   error "isb: unsupported architecture"
+#error "isb: unsupported architecture"
 #endif
 }
 
@@ -202,40 +202,4 @@ void invalidate_cache(const volatile void *addr, uint32_t size) {
 #endif
     }
     dsb();
-}
-
-// ----------------------------------------------------------------------------------
-// General IRQ routines
-// ----------------------------------------------------------------------------------
-
-void irq_disable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifset, #2" ::: "memory");
-#else
-    asm volatile("cpsid i" ::: "memory");
-#endif
-}
-
-void fiq_disable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifset, #1" ::: "memory");
-#else
-    asm volatile("cpsid f" ::: "memory");
-#endif
-}
-
-void irq_enable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifclr, #2" ::: "memory");
-#else
-    asm volatile("cpsie i" ::: "memory");
-#endif
-}
-
-void fiq_enable(void) {
-#ifdef __aarch64__
-    asm volatile("msr daifclr, #1" ::: "memory");
-#else
-    asm volatile("cpsie f" ::: "memory");
-#endif
 }

@@ -7,7 +7,7 @@
 #include "../../include/gpio.h"
 #include "../../../../general/include/serial.h"
 #include "../../../../general/include/config.h" // for BLINK_TIMER
-#include "../../../../multi_core/include/core1.h"
+#include "../../../../cores/include/core0.h"
 
 // ------------------------------------------------------------------------------
 // IRQ handlers for core0
@@ -69,48 +69,17 @@ void bcm2837_irq_handler_core0(void) {
         DMAEN_2837->ENABLE |= DMA_CHANNEL_5;// Re-enable DMA channel 5 for the next transfer
     }
     if (ISR_2837->IRQ_SOURCE[0] & INT_SRC_MBOX0) {
-        mailbox0(mailbox->read(0, 0));// Read mailbox 0 for core0
+        mailbox0(mailbox->read(0));// Read mailbox 0 for core0
     }
 }
 
 void bcm2837_fiq_handler_core0(void) {
 }
 
-
-// ----------------------------------------------------------------------------------
-// IRQ handlers for core1
-// ----------------------------------------------------------------------------------
-
-void bcm2837_interrupts_init_core1(void) {
-    // Disable interrupts
-    interrupts->irq_disable();
-    interrupts->fiq_disable();
-    // Enable mailbox interrupts for this core
-    CORE_MB_CTRL_2837->MAILBOX_CNTRL[1] = (MBOX0_IRQ); // IRQ voor mailbox 0 van core1 enabelen.
-    // ensure writes reach device before we enable interrupts
-    dsb();
-    isb();
-    // Enable interrupts
-    interrupts->irq_enable();
-//    interrupts->fiq_enable();
-}
-
-void bcm2837_irq_handler_core1(void) {
-    if(ISR_2837->IRQ_SOURCE[1] & INT_SRC_MBOX0) {
-        mailbox0(mailbox->read(0, 1));// Read mailbox 0 for core1
-     }
-}
-
-void bcm2837_fiq_handler_core1(void) {
-}
-
 const interrupts_ops_t bcm2837_interrupts_ops = {
     .init_core0         = bcm2837_interrupts_init_core0,
     .irq_handler_core0  = bcm2837_irq_handler_core0,
     .fiq_handler_core0  = bcm2837_fiq_handler_core0,
-    .irq_handler_core1  = bcm2837_irq_handler_core1,
-    .fiq_handler_core1  = bcm2837_fiq_handler_core1,
-    .init_core1         = bcm2837_interrupts_init_core1,
     .irq_disable        = irq_disable,
     .fiq_disable        = fiq_disable,
     .irq_enable         = irq_enable,

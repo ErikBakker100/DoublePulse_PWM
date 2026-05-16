@@ -6,8 +6,8 @@ void bcm2837_gpio_init_pin(uint8_t pin, gpio_mode_t mode, gpio_pud_t pud) {
     bcm283x_gpio_init_pin(GPIO_2837, pin, mode, pud);
 }
 
-void bcm2837_gpio_init_pwm_pin(uint8_t pin) {
-    bcm283x_gpio_init_pwm_pin(pin);
+void bcm2837_gpio_init_pwm_pin() {
+    bcm283x_gpio_init_pwm_pin();
 }
 
 void bcm2837_gpio_set(uint8_t pin) {

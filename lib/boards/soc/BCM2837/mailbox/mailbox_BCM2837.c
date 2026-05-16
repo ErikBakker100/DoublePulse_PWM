@@ -3,14 +3,13 @@
 #include "../../include/mailbox.h"
 #include "../../../../general/include/stdlib.h"
 
-static inline uint8_t validate_mailbox(uint8_t mailbox, uint8_t core) {
+static inline uint8_t validate_mailbox(uint8_t mailbox) {
     if (mailbox > 3) mailbox = 3;
-    if (core > 3) core = 3;
-    return (core * 4) + mailbox;
+    return mailbox;
 }
 
-uint32_t bcm2837_mailbox_read(uint8_t mailbox, uint8_t core) {
-    uint8_t nr = validate_mailbox(mailbox, core);
+uint32_t bcm2837_mailbox_read(uint8_t mailbox) {
+    uint8_t nr = validate_mailbox(mailbox);
     dmb();
     uint32_t val = MAILBOX_2837->MBOX_CLR[nr];
     MAILBOX_2837->MBOX_CLR[nr] = 0xFFFFFFFF;              // Clear all bits
@@ -18,8 +17,8 @@ uint32_t bcm2837_mailbox_read(uint8_t mailbox, uint8_t core) {
     return val;
 }
 
-void bcm2837_mailbox_write(uint8_t mailbox, uint8_t core, uint32_t val) {
-    uint8_t nr = validate_mailbox(mailbox, core);
+void bcm2837_mailbox_write(uint8_t mailbox, uint32_t val) {
+    uint8_t nr = validate_mailbox(mailbox);
     MAILBOX_2837->MBOX_CLR[nr] = 0xFFFFFFFF;              // Clear mailbox, writing a '1' clears that bit.
     dmb();
     MAILBOX_2837->MBOX_SET[nr] = val;

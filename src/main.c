@@ -11,7 +11,7 @@
 #include "../lib/boards/soc/include/mailbox.h"
 #include "../lib/boards/soc/include/timers.h"
 #include "../lib/boards/soc/include/pwm.h"
-#include "../lib/multi_core/include/core1.h"
+#include "../lib/cores/include/core0.h"
 #include "../lib/json/include/jsmn.h"
 #include "../lib/general/include/serial.h"
 #include "../lib/general/include/date_time.h"
@@ -32,20 +32,13 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
   if (!board_init(&board)) return;          // read board information, if false we can not continue.
   uart->set(BAUDRATE);
   mu_puts("> ************** Dual Pulse Generator **************\r\n");
-  mu_puts("> Usage: Send JSON string, for e.g {\"pulseWidth1\": 70, \"interPulseDelay\": 30, \"pulseWidth2\": 50, \"pulseInterval\": 200}.\r\n");
-  mu_puts("> Using GPIO: ");
-  mu_put_uint(OUTPUT_PIN);
-  mu_puts(", default values :\r\n");
-  mu_puts("> _______________                 ______________\r\n");
-  mu_puts("> | pulseWidth1 | interPulseDelay | pulseWith2 | pulseInterval |\r\n");
-  mu_puts(">      70       ______ 30 _________     50     ______ 200_______\r\n");
   mu_puts(">\r\n ******************* Used Board *******************\r\n");
   mu_puts("> Model:                    ");
   mu_puts(board.description);
   mu_put_uint(board.revision_num);
-  mu_puts(", Memory: ");
+  mu_puts(", ");
   mu_puts(board.memory_size);
-  mu_puts(", Maker: ");
+  mu_puts(", made by: ");
   mu_puts(board.manufacturer);
   mu_puts(", ");
   if (board.rev_scheme == 0) {
@@ -63,14 +56,14 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
   mu_puts(board.soc.cpu.data->name);
   mu_puts(", Architecture: ");
   mu_puts(board.soc.cpu.data->arch);
-  mu_puts(", Maker: ");
+  mu_puts(", made by: ");
   mu_puts(board.soc.cpu.implementer->name);
   mu_puts(", Partnumber: ");
   mu_put_hex16(board.soc.cpu.data->partnum, true);
   mu_puts(", Revision: ");
   mu_puts(board.soc.cpu.rNpM);
   mu_puts("\r\n> Using Addresses:          Base: ");
-  mu_put_hex32(board.soc.data.phys_base, true);
+  mu_put_hex32(board.soc.data.bus_base, true);
   mu_puts(", Peripheral base: ");
   mu_put_hex32(board.soc.data.local_periph_base, true);
   format_firmware_date_time(board.firmware_date, &date_time);
@@ -129,13 +122,22 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
   mu_put_uint(board.soc_temperature);
   mu_puts(" milli degrees Celsius\r\n");
   mu_puts("> ****************************************************\r\n");
-
-  gpio->init_pwm_pin();                     // set pin for pwm, and set the PWM channel based on the pin set.
+  mu_puts("> Usage: Send JSON string, for e.g {\"pulseWidth1\": 70, \"interPulseDelay\": 30, \"pulseWidth2\": 50, \"pulseInterval\": 500}.\r\n");
+  mu_puts("> GPIO for output signal: ");
+  mu_put_uint(OUTPUT_PIN);
+  mu_puts(", GPIO for triggering scope : ");
+  mu_put_uint(TRIGGER_PIN);
+  mu_puts("\r\n\r\n");
+  mu_puts("> _______________                 ______________\r\n");
+  mu_puts("> | pulseWidth1 | interPulseDelay | pulseWith2 | pulseInterval |\r\n");
+  mu_puts(">      70       ______ 30 _________     50     ______ 500_______\r\n");
+  mu_puts("> ****************************************************\r\n\r\n");
+  gpio->init_pin(OUTPUT_PIN, GPIO_OUTPUT, PULL_DOWN); // Initialize output pin for doublepulse generation
+  gpio->init_pin(TRIGGER_PIN, GPIO_OUTPUT, PULL_DOWN); // Initialize output pin for scope triggering
   gpio->init_pin(STATUS_PIN, GPIO_OUTPUT, PULL_DOWN); // Set GPIO 21 voor hart beat indication
   timer->set(1, BLINK_TIMER);               // Initialize timer 1 for .1 second intervals
   interrupts->init_core0();                 // Initialize IRQs for core0
   bool updated = true;                      // We start with new settings, so we will send a signal to update the intervals array.
-
   while (1) {
     if (read_json(jsonString)) {            // If a character is in the UART buffer, try to get the whole string.
       mu_puts("> Received: ");
@@ -218,7 +220,7 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
       }
     } 
     if (updated) {
-      mailbox->write(0, 0, 0x1);      // Send a signal to core0 that the intervals have been updated
+      mailbox->write(0, 0x1);      // Send a signal to core0 that the intervals have been updated
       updated = false;
     }
   }

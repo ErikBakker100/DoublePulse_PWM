@@ -13,25 +13,7 @@ void irq_handler_core0(void)
     }
 }
 
-void fiq_handler_core0(void)
-{
-    if (interrupts && interrupts->fiq_handler_core0) {
-        interrupts->fiq_handler_core0();
-    }
-}
-
-void irq_handler_core1(void)
-{
-    if (interrupts && interrupts->irq_handler_core1) {
-        interrupts->irq_handler_core1();
-    }
-}
-
-void fiq_handler_core1(void)
-{
-    if (interrupts && interrupts->fiq_handler_core1) {
-        interrupts->fiq_handler_core1();
-    }
+void fiq_handler_core0(void){
 }
 
 // ----------------------------------------------------------------------------------
