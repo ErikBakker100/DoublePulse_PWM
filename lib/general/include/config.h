@@ -7,16 +7,18 @@
 
 #define BAUDRATE 115200
 
-// Default values for the pulse widths and intervals. These can be updated by sending a JSON string with the new values over UART. But may not be bigger than 255.
+// Default values for the pulse widths and intervals. These can be updated by sending a JSON string with the new values over UART.
 #define DEFAULT_PULSE_WIDTH1 70
 #define DEFAULT_INTER_PULSE_DELAY 30
 #define DEFAULT_PULSE_WIDTH2 50
 #define DEFAULT_PULSE_INTERVAL 200
-extern volatile uint8_t Intervals[];        // Array to hold the intervals
-#define MAX_INTERVAL 255                    // Maximum allowed value for pulse widths and intervals, based on the fact that we are using uint8_t to store these values in the bitstream for the PWM signal.
+extern volatile uint16_t Intervals[];       // Array to hold the intervals (16-bit values)
+#define MAX_INTERVAL 65535                  // Maximum allowed value for pulse widths and intervals (uint16_t)
 
-#define BITSTREAM_WORDS 256                 // Maximum number of 32-bit words in the bitstream for the PWM signal, this limits the maximum pulse interval and pulse widths we can generate. 
-                                            // We need to make sure that the total number of bits in the bitstream does not exceed BITSTREAM_WORDS * 32 bits.
+// Maximum number of 32-bit words in the bitstream for the PWM signal.
+// Increased to support 16-bit intervals (worst-case total bits up to ~262k).
+#define BITSTREAM_WORDS 9000                // ~9000 * 4 = 36 KB buffer
+                                            // Ensure BITSTREAM_WORDS * 32 bits can hold the expanded pattern.
 extern volatile uint32_t bitstream[BITSTREAM_WORDS]; // We will use this to store the bitstream for the PWM signal
 
 #define CPUID_REG (*(volatile uint32_t *)0xE000ED00)

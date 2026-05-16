@@ -122,7 +122,7 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
   mu_put_uint(board.soc_temperature);
   mu_puts(" milli degrees Celsius\r\n");
   mu_puts("> ****************************************************\r\n");
-  mu_puts("> Usage: Send JSON string, for e.g {\"pulseWidth1\": 70, \"interPulseDelay\": 30, \"pulseWidth2\": 50, \"pulseInterval\": 500}.\r\n");
+  mu_puts("> Usage: Send JSON string, for e.g {\"pulseWidth1\": 70, \"interPulseDelay\": 30, \"pulseWidth2\": 50, \"pulseInterval\": 200}.\r\n");
   mu_puts("> GPIO for output signal: ");
   mu_put_uint(OUTPUT_PIN);
   mu_puts(", GPIO for triggering scope : ");
@@ -130,10 +130,10 @@ void core_main_0(uint32_t arg0, uint32_t arg1) {
   mu_puts("\r\n\r\n");
   mu_puts("> _______________                 ______________\r\n");
   mu_puts("> | pulseWidth1 | interPulseDelay | pulseWith2 | pulseInterval |\r\n");
-  mu_puts(">      70       ______ 30 _________     50     ______ 500_______\r\n");
+  mu_puts(">      70       ______ 30 _________     50     ______ 200_______\r\n");
   mu_puts("> ****************************************************\r\n\r\n");
-  gpio->init_pin(OUTPUT_PIN, GPIO_OUTPUT, PULL_DOWN); // Initialize output pin for doublepulse generation
-  gpio->init_pin(TRIGGER_PIN, GPIO_OUTPUT, PULL_DOWN); // Initialize output pin for scope triggering
+  gpio->init_pin(OUTPUT_PIN, GPIO_ALT5, PULL_DOWN); // Initialize output pin for doublepulse generation
+  gpio->init_pin(TRIGGER_PIN, GPIO_ALT5, PULL_DOWN); // Initialize output pin for scope triggering
   gpio->init_pin(STATUS_PIN, GPIO_OUTPUT, PULL_DOWN); // Set GPIO 21 voor hart beat indication
   timer->set(1, BLINK_TIMER);               // Initialize timer 1 for .1 second intervals
   interrupts->init_core0();                 // Initialize IRQs for core0

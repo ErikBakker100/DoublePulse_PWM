@@ -7,8 +7,19 @@
 // The pulse_length array is a 4 byte array. The buffer is 32bits wide, retunrs the amount of words that we have filled in the buffer, so we know how many words to send in the DMA transfer.
 // Note DMA sends 
 
-uint32_t make_bit_buffer(volatile uint32_t* buffer, const uint8_t* pulse_length) {
-    uint32_t pattern_len = pulse_length[0] + pulse_length[1] + pulse_length[2] + pulse_length[3];
+uint32_t make_bit_buffer(volatile uint32_t* buffer, const uint16_t* pulse_length) {
+    // Accept 16-bit interval values. If needed, adjust pulseInterval (index 3)
+    // so total pattern length aligns to 32-bit boundaries.
+    uint32_t pattern_len = (uint32_t)pulse_length[0] + (uint32_t)pulse_length[1] + (uint32_t)pulse_length[2] + (uint32_t)pulse_length[3];
+    // If pattern_len is not divisible by 32, round up by extending pulseInterval (index 3).
+    uint32_t rem = pattern_len % 32;
+    if (rem != 0) {
+        uint32_t add = 32 - rem;
+        // modify the global Intervals to reflect the adjusted interval
+        // (pulse_length points to Intervals in config.c)
+        ((volatile uint16_t*)pulse_length)[3] = (uint16_t)((uint32_t)pulse_length[3] + add);
+        pattern_len += add;
+    }
     if (pattern_len == 0) return 0; // Veiligheid: voorkom deling door 0
 
     uint32_t word_len = 32;
@@ -33,14 +44,14 @@ uint32_t make_bit_buffer(volatile uint32_t* buffer, const uint8_t* pulse_length)
     uint32_t current_bit = 0;
     for (uint32_t r = 0; r < num_repeats; r++) {
         for (uint8_t i = 0; i < 4; i++) {
-            uint32_t length = pulse_length[i];
-            bool is_high = (i % 2 == 0); 
+            uint32_t length = (uint32_t)pulse_length[i];
+            bool is_high = (i % 2 == 0);
 
             if (is_high) {
                 for (uint32_t b_idx = 0; b_idx < length; b_idx++) {
                     uint32_t word_idx = current_bit / 32;
                     uint32_t bit_pos = current_bit % 32;
-                    
+
                     // MSB-first mapping voor PWM/DMA
                     buffer[word_idx] |= (1U << (31 - bit_pos));
                     current_bit++;

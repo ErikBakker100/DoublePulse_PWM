@@ -25,13 +25,6 @@ void bcm283x_gpio_init_pin(volatile bcm2835_gpio_regs_t *regs, uint8_t pin, gpio
     regs->PUDCLK[reg_index] = 0;
 }
 
-// set the right alt function for the pin, and enable the right channel for that pin. Only 4 pins are supported for PWM, so if the pin is not supported, return -1 to indicate failure
-void bcm283x_gpio_init_pwm_pin(void) {
-    gpio->init_pin(OUTPUT_PIN, GPIO_ALT5, PULL_DOWN);
-    gpio->init_pin(TRIGGER_PIN, GPIO_ALT5, PULL_DOWN); // We also need to set the corresponding trigger pin to the same alt function,
-
-}
-
 void bcm283x_gpio_set(volatile bcm2835_gpio_regs_t *regs, uint8_t pin) {
     uint8_t reg_index = pin / 32;          // Elk register behandelt 32 pins    
     uint32_t mask = 1u << (pin % 32);

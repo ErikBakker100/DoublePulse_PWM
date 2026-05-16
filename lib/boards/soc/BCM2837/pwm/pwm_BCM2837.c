@@ -1,5 +1,5 @@
 #include "include/pwm_BCM2837.h"
-#include "../dma/include/dma_BCM2837.h"
+#include "../../include/dma.h"
 #include "../../include/pwm.h"
 #include "../../include/gpio.h"
 #include "../../../../general/include/stdlib.h"
@@ -12,8 +12,8 @@ void bcm2837_pwm_set_pulses(volatile uint8_t* pulse_length) {
 }
 
 void bcm2837_pwm_run() {
-    PWM0_2837->CTL = 0;                     // Disable the channels before we start setting it up.   
-    PWM0_2837->CTL = PWM_CTL_CLRF;          // Clear the FIFO to reset the state of the channel.
+    PWM0_2837->CTL = 0;                                     // Disable the channels before we start setting it up.
+    PWM0_2837->CTL = PWM_CTL_CLRF | PWM_CTL_USEF0;          // Clear the FIFO to reset the state of the channel and enable FIFO mode for channel 0.
     dmb();                                  // Data memory barrier to ensure that the write to the control register is completed.
     // set up the clock for the PWM signal.
     CM_2837->PWM.CTL = (CM_PASSWD | CM_CTL_KILL) & ~CM_CTL_ENAB; // Set kill bit to stop the clock generator
@@ -28,24 +28,25 @@ void bcm2837_pwm_run() {
     PWM0_2837->STA = 0x1FFFF;               // Clear the status register to reset all flags, since we don't know what state it is in from previous runs.
         
     uint32_t ctl = 0;                       // Control variable to hold the control register value for the PWM channel.
-    uint32_t trigger_period = Intervals[0] + Intervals[1] + Intervals[2] + Intervals[3];
-    uint32_t trigger_width = 8;
-    if (trigger_width >= trigger_period) {
-        trigger_width = 1;
-    }
-    PWM0_2837->RNG1 = 32;                   // Set the range register to 32, since we are using a 32-bit bitstream for the PWM signal. This means that each 
-                                            // bit in the bitstream will represent one cycle of the PWM signal, and the total length of the PWM signal will be 32 cycles.
-    ctl |= PWM_CTL_MODE1;                   // Set the mode bit to 1 to use serializer mode, which will allow us to write a stream of bits to the FIFO and have it 
-                                            // output as a PWM signal.
-    ctl |= PWM_CTL_USEF1;                   // Set the use FIFO bit to 1 to enable the use of the FIFO for the channel.
-//    ctl |= PWM_CTL_RPTL1;                 // Set the repeat last data bit to 1 to have the channel repeat the last data in the FIFO when it runs out of data.  
-    PWM0_2837->RNG0 = trigger_period;
-    PWM0_2837->DAT0 = trigger_width;
-    ctl |= PWM_CTL_MSEN0;
+    ctl |= PWM_CTL_MODE0;                   // Channel 0 serializer mode, so DMA/FIFO output can drive GPIO18.
+    ctl |= PWM_CTL_USEF0;                   // Enable FIFO for channel 0.
+//    ctl |= PWM_CTL_SBIT0;                   // Use MSB-first serial output for channel 0 to match bitbuffer layout.
+    ctl |= PWM_CTL_MSEN1;                   // Channel 1 mark-space mode for the short trigger pulse on GPIO19.
     PWM0_2837->CTL = ctl;                   // Configure FIFO/serializer mode before starting DMA.
+
+    PWM0_2837->RNG0 = 32;                   // 32-bit serializer words for channel 0.
+    PWM0_2837->DAT0 = 0;                    // Not used for channel 0 serializer mode.
+
     dmb();                                  // Ensure all data is visible before starting the DMA channel.
-    bcm2837_dma_run();                      // Start DMA now PWM is ready so PWM DREQ paces FIFO writes.
+    dma->run();                             // Start DMA now PWM is ready so PWM DREQ paces FIFO writes.
     dmb();
+    // Now that DMA/make_bit_buffer may have adjusted Intervals[3], compute trigger period and set channel1 registers
+    uint32_t trigger_period = (uint32_t)Intervals[0] + (uint32_t)Intervals[1] + (uint32_t)Intervals[2] + (uint32_t)Intervals[3];
+    uint32_t trigger_width = 1; // minimal short pulse; keep small to mark the rising edge
+    if (trigger_width >= trigger_period) trigger_width = 1;
+    PWM0_2837->RNG1 = trigger_period;
+    PWM0_2837->DAT1 = trigger_width;
+
     PWM0_2837->CTL = ctl | PWM_CTL_EN_CH0 | PWM_CTL_EN_CH1; // Enable pulse and trigger outputs together.
 }
 

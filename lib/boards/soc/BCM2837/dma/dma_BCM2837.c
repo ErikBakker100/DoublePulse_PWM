@@ -34,7 +34,7 @@ void bcm2837_dma_run(void) {
     volatile uint32_t *dma_bitstream = (volatile uint32_t *)bitstream_arm_addr;
 
     memset((void *)cb, 0, sizeof(*cb));
-    uint32_t length = make_bit_buffer(dma_bitstream, (const uint8_t*)Intervals); // returns the amount of 32-bit words that we have filled in the buffer.
+    uint32_t length = make_bit_buffer(dma_bitstream, (const uint16_t*)Intervals); // returns the amount of 32-bit words that we have filled in the buffer.
     if (length == 0) {
         DMA05_2837->CS = CS_RESET;          // Stop de DMA als er geen data is
         return;
@@ -44,7 +44,7 @@ void bcm2837_dma_run(void) {
     cb->TI = 0 | TI_WAIT_RESP | TI_DEST_DREQ | TI_SRC_INC | TI_PERMAP(5); // Set the control block flags for the DMA transfer, wait for the write response, 
                                             // use DREQ to pace the transfer based on the PWM FIFO status, increment the source address after each read, and set the peripheral mapping to 5 for PWM.
     cb->SOURCE_AD = bitstream_bus_addr;
-    cb->DEST_AD = (PWM0_2837->FIF & 0x00FFFFFF) | board.soc.data.bus_base; // (uint32_t)(uintptr_t)0x7E20C018 het adres van de PWM FIFO register. We gebruiken een bus adres omdat de DMA-engine alleen bus adressen begrijpt.
+    cb->DEST_AD = ((uint32_t)(uintptr_t)&PWM0_2837->FIF & 0x00FFFFFF) | board.soc.data.bus_base; // (uint32_t)(uintptr_t)0x7E20C018 het adres van de PWM FIFO register. We gebruiken een bus adres omdat de DMA-engine alleen bus adressen begrijpt.
     cb->TXFR_LEN = length * sizeof(uint32_t); // Convert number of 32-bit words to number of bytes
     cb->STRIDE = 0; // No stride for simple 1D transfers
     cb->NEXTCONBK = cb_bus_addr;
@@ -56,7 +56,14 @@ void bcm2837_dma_run(void) {
     while (DMA05_2837->CS & CS_RESET) { }   // Wacht tot reset klaar is
     DMA05_2837->CS = CS_INT | CS_END;       // Clear status vlaggen
     DMA05_2837->CONBLK_AD = cb_bus_addr;    // Set the control block bus address for the DMA channel.
+    // Prefill the PWM FIFO with the first few words so the serializer has immediate data
+    // This improves alignment between the DMA-driven serializer and the mark-space trigger on channel 1.
+    // Use more words to make the start more deterministic on different bitstream lengths.
+//    for (uint32_t i = 0; i < 8 && i < length; i++) {
+//        PWM0_2837->FIF = dma_bitstream[i];
+//    }
     DMA05_2837->CS = CS_PRIORITY | CS_PANIC_PRIORITY | CS_WAIT_FOR_OUTSTANDING_WRITES | CS_ACTIVE;
+    while (PWM0_2837->STA & PWM_STA_EMPT) {} // Wait until the FIFO is empty before exiting to ensure the last word has been transferred to the PWM peripheral
 }
 
 const dma_ops_t bcm2837_dma_ops = {
